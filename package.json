@@ -1,0 +1,35 @@
+{
+  "name": "cmr1-ts3-bot",
+  "version": "0.0.1",
+  "description": "TS3 bot",
+  "main": "index.js",
+  "dependencies": {
+    "alfred-teamspeak": "^4.0.1",
+    "async": "^2.4.1",
+    "gw2api-client": "^5.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmr1/node-ts3-bot.git"
+  },
+  "keywords": [
+    "teamspeak",
+    "teamspeak3",
+    "ts3",
+    "guildwars",
+    "guildwars2",
+    "gw2",
+    "bot",
+    "verify"
+  ],
+  "author": "Charlie McClung",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cmr1/node-ts3-bot/issues"
+  },
+  "homepage": "https://github.com/cmr1/node-ts3-bot#readme"
+}

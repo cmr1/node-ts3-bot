@@ -1,0 +1,9 @@
+.idea
+.DS_Store
+*.retry
+node_modules
+*.swp
+*.tmp
+tmp
+ignore
+npm-debug.log
