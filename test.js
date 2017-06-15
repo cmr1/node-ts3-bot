@@ -1,39 +1,59 @@
-var key = '2024F08A-329F-1648-B2AC-84F127600627E084B644-BA26-4407-A95B-264772E329C8'
+var list = {
+  cid: [0, 1, 3, 5, 7],
+  order: [1, 4, 5, 2, 3],
+  name: ['ch0', 'ch1', 'ch3', 'ch5', 'ch7']
+};
 
-var gw2 = require('gw2-api');
-var api = new gw2.gw2();
- 
-// Set storage system to RAM if no access to localStorage 
-api.setStorage(new gw2.memStore());
- 
-// Get daily pve achievement names: 
-api.getDailyAchievements().then(function (res) {
-  if (!res.pve) {
-    return;
-  }
- 
-  var achievementIds = [];
- 
-  for (var i = 0, len = res.pve.length; i < len; i++) {
-    achievementIds.push(res.pve[i].id);
-  }
- 
-  return api.getAchievements(achievementIds);
-}).then(function (res) {
-  for (var i = 0, len = res.length; i < len; i++) {
-    console.log(res[i].name);
+var arr = {};
+
+list.cid.forEach((cid, index) => {
+  arr[cid] = {}
+});
+
+Object.keys(list).forEach(key => {
+  const val = list[key];
+
+  if (Array.isArray(val)) {
+    val.forEach((v, i) => {
+
+    });
   }
 });
+
+// var gw2 = require('gw2-api');
+// var api = new gw2.gw2();
  
-// Get all character names associated with an account. 
-api.setAPIKey(key);
+// // Set storage system to RAM if no access to localStorage 
+// api.setStorage(new gw2.memStore());
  
-api.getCharacters().then(function (res) {
-  for (var i = 0, len = res.length; i < len; i++) {
-    // This API call just returns an array of string character names. 
-    console.log(res[i]);
-  }
-});
+// // Get daily pve achievement names: 
+// api.getDailyAchievements().then(function (res) {
+//   if (!res.pve) {
+//     return;
+//   }
+ 
+//   var achievementIds = [];
+ 
+//   for (var i = 0, len = res.pve.length; i < len; i++) {
+//     achievementIds.push(res.pve[i].id);
+//   }
+ 
+//   return api.getAchievements(achievementIds);
+// }).then(function (res) {
+//   for (var i = 0, len = res.length; i < len; i++) {
+//     console.log(res[i].name);
+//   }
+// });
+ 
+// // Get all character names associated with an account. 
+// api.setAPIKey(key);
+ 
+// api.getCharacters().then(function (res) {
+//   for (var i = 0, len = res.length; i < len; i++) {
+//     // This API call just returns an array of string character names. 
+//     console.log(res[i]);
+//   }
+// });
  
 // Get Character Details 
 // api.getCharacters('Zojja').then(function (res) {

@@ -6,6 +6,7 @@
   "dependencies": {
     "alfred-teamspeak": "^4.0.1",
     "async": "^2.4.1",
+    "cmr1-logger": "0.0.3",
     "gw2-api": "^2.1.0",
     "gw2api-client": "^5.6.1",
     "node-teamspeak-api": "^1.0.0",
