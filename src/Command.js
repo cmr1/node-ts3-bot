@@ -19,14 +19,10 @@ class Command {
   }
 
   process(data) {
-    const parts = data.msg.replace(/\s+/g, ' ').trim().split(' ');
+    this.args = data.msg.replace(/\s+/g, ' ').trim().split(' ');
 
-    if (parts[0] === this.cmd) {
+    if (this.args[0] === this.cmd) {
       this.bot.logger.log('Running CMD: ' + this.cmd);
-
-      parts.shift();
-
-      this.args = Object.assign([], parts);
 
       this.action(this.args, data);
 

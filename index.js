@@ -1,32 +1,46 @@
 const gw2 = require('gw2-api');
 const VerifyBot = require('./src/VerifyBot');
-const Woodhouse = require('./src/Woodhouse');
+const Bot = require('./src/Bot');
 
-const wh = new Woodhouse({
-  pass: 'abc123',
+const api = new gw2.gw2();
+
+api.setStorage(new gw2.memStore());
+
+const bot = new Bot({
+  // pass: 'abc123',
   // verbose: true
-  channel: 'poop'
+  // channel: 'poop'
 });
 
-wh.init(() => {
-  console.log('finished init');
+bot.init(() => {
+  console.log('Ready!');
 });
 
-wh.globalCommand('woodhouse', (args, data) => {
-  data.respond('Hi! I am Woodhouse. How may I help you?');
-});
+// wh.globalCommand('woodhouse', (args, data) => {
+//   data.respond('Hi! I am Woodhouse. How may I help you?');
+// });
 
-wh.serverCommand('wh', (args, data) => {
-  data.respond('I am listening to the server text chat');
-})
+// wh.serverCommand('wh', (args, data) => {
+//   data.respond('I am listening to the server text chat');
+// })
 
-wh.channelCommand('help', (args, data) => {
-  data.respond('How can I help?');
-});
+// wh.channelCommand('help', (args, data) => {
+//   data.respond('How can I help?');
+// });
 
-wh.privateCommand('verify', (args, data) => {
-  data.respond('verifying with args: ' + args.join(','));
-});
+// wh.privateCommand('verify', (args, data) => {
+//   api.setAPIKey(args[1]);
+
+//   api.getAccount().then(res => {
+//     console.log(res);
+//     if (res) {
+//       data.respond('Account Info:\n', JSON.stringify(res, null, 2));      
+//     } else {
+//       data.respond('No Account Info found');
+//     }
+//   }).catch(err => wh._error(err));
+//   // data.respond('verifying with args: ' + args.join(','));
+// });
 
 // wh.cmd('hi', (args, data) => {
 //   data.respond('hi');
@@ -41,9 +55,7 @@ wh.privateCommand('verify', (args, data) => {
 // wh.on('action', (data) => console.log('RECEIVED ACTION!', data));
 
 
-// const api = new gw2.gw2();
 
-// api.setStorage(new gw2.memStore());
 
 // const bot = new VerifyBot();
 

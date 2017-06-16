@@ -21,17 +21,12 @@ const registerEvents = [
   'textprivate'
 ];
 
-class Woodhouse extends EventEmitter {
+class Bot extends EventEmitter {
   constructor(options = {}) {
     super();
 
     this.client = {};
-
-    this.channels = [];
-    // this.channels = {};
     this.commands = {};
-    this.serverGroups = {};
-    this.channelGroups = {};
 
     this.options = {
       sid:  process.env.TS3_SID  || options.sid  || '1',
@@ -49,7 +44,7 @@ class Woodhouse extends EventEmitter {
 
     this.logger = new Logger(this.options);
     this.logger.enableLogging(config.logging);
-
+    
     this.on('ready', () => {
       this.logger.success(`${this.options.name} is ready!`);
 
@@ -65,6 +60,8 @@ class Woodhouse extends EventEmitter {
               targetmode: 1,
               target: resp.invokerid,
               msg
+            }, (err, resp, req) => {
+              this.logger.debug('Responded');
             });
           }
         }
@@ -72,8 +69,10 @@ class Woodhouse extends EventEmitter {
         this.logger.debug(`Received notification for event: '${event}' with response:`, resp);
         this.emit(event, resp);
       });
+    });
 
-      // this._watchChannels();
+    this.globalCommand('help', (args, data) => {
+      data.respond(`Hi! My name is ${this.options.name}, how can I help you?`);
     });
   }
 
@@ -183,7 +182,7 @@ class Woodhouse extends EventEmitter {
       this.logger.debug(`Query: ${action} with params: ${JSON.stringify(params)}`);
 
       if (err) {
-        this._error(err)
+        this._error(`Action failed! Action: ${action} | Params: ${JSON.stringify(params)}`, err);
         return callback(err);
       }
 
@@ -264,14 +263,14 @@ class Woodhouse extends EventEmitter {
   }
 
   _warn(msg) {
-    this.emit('warn', msg);
+    this.emit('warning', msg);
     this.logger.warn(msg);
   }
 
   _error(err) {
-    this.emit('error', err);
+    this.emit('failure', err);
     this.logger.error(err);
   }
 }
 
-module.exports = Woodhouse;
+module.exports = Bot;
