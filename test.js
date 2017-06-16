@@ -59,3 +59,22 @@ Object.keys(list).forEach(key => {
 // api.getCharacters('Zojja').then(function (res) {
 //   console.log(res);
 // });
+// async.each(watchQueries, (query, next) => {
+              //   const listQuery = query + 'list';
+              //   const infoQuery = query + 'info';
+
+              //   this._query(listQuery, (err, resp, req) => {
+              //     if (err) return next(err);
+
+              //     if (resp && resp.data && Array.isArray(resp.data)) {
+              //       this.state[query] = resp.data;
+              //       return next();
+              //     } else {
+              //       return next(`Unable to watch query: '${query}' (bad response data)`);
+              //     }
+              //   });
+              // }, err => {
+              //   this.emit('ready');
+
+              //   return callback(err);
+              // });

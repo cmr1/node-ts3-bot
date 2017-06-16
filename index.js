@@ -7,14 +7,31 @@ const api = new gw2.gw2();
 api.setStorage(new gw2.memStore());
 
 const bot = new Bot({
-  // pass: 'abc123',
+  pass: 'abc123',
   // verbose: true
   // channel: 'poop'
 });
 
 bot.init(() => {
   console.log('Ready!');
+
+  // bot.getChannelByName('poop', (err, channel) => {
+  //   console.log(err, channel);
+  // });
+
+  // bot.getChannelByName('adsfa8sdf7asd98fadsf fasdfadsfadsfsd]fasdfa1245', (err, channel) => {
+  //   console.log(err, channel);
+  // });
+
+  // bot.getClientByName('adsfasdfa', (err, channel) => {
+  //   console.log(err, channel);
+  // });
+
+  // bot.getClientByName('Test', (err, channel) => {
+  //   console.log(err, channel);
+  // });
 });
+
 
 // wh.globalCommand('woodhouse', (args, data) => {
 //   data.respond('Hi! I am Woodhouse. How may I help you?');

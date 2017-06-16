@@ -5,9 +5,13 @@ const async = require('async');
 const EventEmitter = require('eventemitter2');
 const TeamSpeak = require('node-teamspeak-api');
 const Logger = require('cmr1-logger');
+const Client = require('./Client');
+const Server = require('./Server');
+const Channel = require('./Channel');
 const Command = require('./Command');
 
 const defaultArgTypes = {
+  'number': 'id',
   'string': 'action',
   'function': 'callback',
   'object': (obj) => { return Array.isArray(obj) ? 'options' : 'params' }
@@ -15,7 +19,6 @@ const defaultArgTypes = {
 
 const registerEvents = [
   'server',
-  // 'channel',
   'textserver',
   'textchannel',
   'textprivate'
@@ -25,7 +28,9 @@ class Bot extends EventEmitter {
   constructor(options = {}) {
     super();
 
-    this.client = {};
+    this.client = null;
+    this.server = null;
+    this.channel = null;
     this.commands = {};
 
     this.options = {
@@ -44,36 +49,6 @@ class Bot extends EventEmitter {
 
     this.logger = new Logger(this.options);
     this.logger.enableLogging(config.logging);
-    
-    this.on('ready', () => {
-      this.logger.success(`${this.options.name} is ready!`);
-
-      registerEvents.forEach(event => {
-        this.logger.debug(`Registering for '${event}' notifications`);
-        this.ts3.subscribe({ event });
-      });
-
-      this.ts3.on('notify', (event, resp) => {
-        resp.respond = (msg) => {
-          if (resp.invokerid) {
-            this._query('sendtextmessage', {
-              targetmode: 1,
-              target: resp.invokerid,
-              msg
-            }, (err, resp, req) => {
-              this.logger.debug('Responded');
-            });
-          }
-        }
-
-        this.logger.debug(`Received notification for event: '${event}' with response:`, resp);
-        this.emit(event, resp);
-      });
-    });
-
-    this.globalCommand('help', (args, data) => {
-      data.respond(`Hi! My name is ${this.options.name}, how can I help you?`);
-    });
   }
 
   init() {
@@ -82,31 +57,131 @@ class Bot extends EventEmitter {
     this._login(err => {
       if (err) return callback(err);  
 
-      this._query('whoami', (err, resp, req) => {
+      this._join(err => {
         if (err) return callback(err);
 
-        this.client = resp.data;
+        this.emit('ready');
 
-        this._use(err => {
-          if (err) return callback(err);
+        return callback();
+      });
+    });
 
-          this._query('clientupdate', { client_nickname: this.options.name }, (err, resp, req) => {
-            if (err) return callback(err);
+    this.on('ready', () => {
+      this.logger.success(`${this.options.name} is ready!`);
 
-            this._join(err => {
-              if (err && err.error_id && err.error_id === 770) {
-                this.logger.warn(`Already member of channel: ${this.options.channel}`);
-              } else if (err) {
-                return callback(err);
-              } 
+      registerEvents.forEach(event => {
+        this.logger.debug(`Registering for '${event}' notifications`);
+        this.ts3.subscribe({ event });
+      });
+    });
 
-              this.emit('ready');
+    this.on('clientmoved', (data) => {
+      console.log(data.client);
+      console.log(this.client);
+      if (this.channel && data.channel && data.client && data.client.client_unique_identifier !== this.client.client_unique_identifier) {
+        if (this.channel.cid === data.channel.cid) {
+          this.emit('cliententerchannel', data);
+        } else {
+          this.emit('clientleftchannel', data);
+        }
+      }
+    });
 
-              return callback();
-            });
-          });
+    this.ts3.on('notify', (event, resp) => {
+      this.logger.debug(`Received notification for event: '${event}' with response:`, resp);
+
+      const clientId = resp.invokerid || resp.clid || null;
+      const channelId = resp.ctid || resp.cid || null;
+
+      this.getClientById(clientId, (err, client) => {
+        if (client) resp.client = client;
+
+        this.getChannelById(channelId, (err, channel) => {
+          if (channel) resp.channel = channel;
+
+          this.emit(event, resp);
         });
       });
+    });
+  }
+
+  getServer() {
+    const { callback } = this._args(arguments);
+    
+    this._query('serverinfo', (err, resp, req) => {
+      if (err) return callback(err);
+
+      const server = resp.data ? new Server({ bot: this, data: resp.data }) : null;
+
+      return callback(null, server);
+    });
+  }
+
+  getClientById() {
+    const { clid, callback } = this._args(arguments, {
+      'string': 'clid',
+      'number': 'clid'
+    });
+
+    if (typeof clid !== 'number') {
+      this.logger.debug('Cannot get client without a client id.');
+      return callback();
+    };
+    
+    this._query('clientinfo', { clid }, (err, resp, req) => {
+      if (err) return callback(err);
+
+      const client = resp.data ? new Client({ bot: this, data: resp.data, clid }) : null;
+
+      return callback(null, client);
+    });
+  }
+
+  getClientByName() {
+    const { pattern, callback } = this._args(arguments, {
+      'string': 'pattern'
+    });
+
+    this._query('clientfind', { pattern }, (err, resp, req) => {
+      if (err) return callback(err);
+
+      const clientId = Array.isArray(resp.data) ? resp.data[0].clid : resp.data.clid;
+
+      this.getClientById(clientId, callback);
+    });
+  }
+
+  getChannelById() {
+    const { cid, callback } = this._args(arguments, {
+      'string': 'cid',
+      'number': 'cid'
+    });
+
+    if (!cid) {
+      this.logger.debug('Cannot get channel without a channel id.');
+      return callback();
+    };
+    
+    this._query('channelinfo', { cid }, (err, resp, req) => {
+      if (err) return callback(err);
+
+      const channel = resp.data ? new Channel({ bot: this, data: resp.data, cid }) : null;
+
+      return callback(null, channel);
+    });
+  }
+
+  getChannelByName() {
+    const { pattern, callback } = this._args(arguments, {
+      'string': 'pattern'
+    });
+
+    this._query('channelfind', { pattern }, (err, resp, req) => {
+      if (err) return callback(err);
+
+      const channelId = Array.isArray(resp.data) ? resp.data[0].cid : resp.data.cid;
+
+      this.getChannelById(channelId, callback);
     });
   }
 
@@ -137,6 +212,30 @@ class Bot extends EventEmitter {
         context
       });
     }
+  }
+
+  messageClient(target, msg) {
+    this.message(target, msg, 1);
+  }
+
+  messageChannel(target, msg) {
+    this.message(target, msg, 2);
+  }
+
+  messageServer(msg) {
+    this.message(this.options.sid, msg, 3);
+  }
+
+  message(target, msg, context=3) {
+    this._query('sendtextmessage', {
+      targetmode: context,
+      target: target,
+      msg
+    }, (err, resp, req) => {
+      if (err) return this._error(err);
+
+      this.logger.debug(`Sent message to target: ${target} with context: ${context} => '${msg}'`);
+    });
   }
 
   _args(args, types = {}) {
@@ -203,30 +302,18 @@ class Bot extends EventEmitter {
     });
   }
 
-  _join() {
-    const { callback } = this._args(arguments);
-
-    this.logger.log(`Attempting to find & join channel: ${this.options.channel}`);
-
-    const channel_find_params = { pattern: this.options.channel };
-
-    this._query('channelfind', channel_find_params, (err, resp, req) => {
-      if (err) return callback(err);
-
-      this.logger.log('Channel found.');
-
-      this._query('clientmove', { clid: this.client.client_id, cid: resp.data.cid }, (err, resp, req) => {
-        if (err) return callback(err);
-
-        this.logger.log('Channel joined.');
-
-        return callback();
-      });
-    });
-  }
-
   _login() {
-    const { callback } = this._args(arguments);
+    const { callback, params } = this._args(arguments);
+
+    if (params) {
+      if (params.user) {
+        this.options.user = params.user;
+      }
+
+      if (params.pass) {
+        this.options.pass = params.pass;
+      }
+    }
 
     const login_params = {
       client_login_name: this.options.user,
@@ -240,7 +327,29 @@ class Bot extends EventEmitter {
 
       this.logger.log('Authenticated.');
 
-      return callback();
+      this._query('whoami', (err, resp, req) => {
+        if (err) return callback(err);
+
+        this.getClientById(resp.data.clid, (err, client) => {
+          if (err) return callback(err);
+
+          this.client = resp.data;
+
+          this.logger.debug('Loaded bot client info:', this.client);
+
+          this._use(err => {
+            if (err) return callback(err);
+
+            this._query('clientupdate', { client_nickname: this.options.name }, (err, resp, req) => {
+              if (err) return callback(err);
+
+              this.logger.debug(`Set bot name to: ${this.options.name}`);
+        
+              return callback();
+            });
+          });
+        });
+      });
     });
   }
 
@@ -258,7 +367,53 @@ class Bot extends EventEmitter {
 
       this.logger.log('Using virtual server.');
 
-      return callback();
+      this.getServer((err, server) => {
+        if (err) return callback(err);
+
+        this.server = server;
+
+        return callback();
+      });
+    });
+  }
+
+  _join() {
+    const { callback, params } = this._args(arguments);
+
+    if (params && params.channel) {
+      this.options.channel = params.channel;
+    }
+
+    this.logger.log(`Attempting to find & join channel: ${this.options.channel}`);
+
+    const channel_find_params = { pattern: this.options.channel };
+
+    this._query('channelfind', channel_find_params, (err, resp, req) => {
+      if (err) return callback(err);
+
+      this.logger.log('Channel found.');
+      
+      this.getChannelById(resp.data.cid, (err, channel) => {
+        if (err) return callback(err);
+
+        this.ts3.subscribe({ event: 'channel', id: channel.cid });        
+
+        this._query('clientmove', { clid: this.client.client_id, cid: channel.cid }, (err, resp, req) => {
+          if (err && err.error_id && err.error_id === 770) {
+            this.logger.warn(`Already member of channel: ${this.options.channel}`);
+          } else if (err) {
+            return callback(err);
+          }
+
+          this.channel = channel;
+
+          this.logger.log('Channel joined.');
+
+          this.emit('join', this.channel);
+
+          return callback();
+        });
+      });
     });
   }
 
