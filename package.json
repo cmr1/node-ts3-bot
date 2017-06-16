@@ -7,8 +7,7 @@
     "alfred-teamspeak": "^4.0.1",
     "async": "^2.4.1",
     "cmr1-logger": "0.0.3",
-    "gw2-api": "^2.1.0",
-    "gw2api-client": "^5.6.1",
+    "node-rest-client": "^3.1.0",
     "node-teamspeak-api": "^1.0.0",
     "string-template": "^1.0.0"
   },
@@ -24,11 +23,7 @@
     "teamspeak",
     "teamspeak3",
     "ts3",
-    "guildwars",
-    "guildwars2",
-    "gw2",
-    "bot",
-    "verify"
+    "bot"
   ],
   "author": "Charlie McClung",
   "license": "MIT",

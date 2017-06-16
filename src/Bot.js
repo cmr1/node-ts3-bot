@@ -41,7 +41,6 @@ class Bot extends EventEmitter {
       channel: process.env.TS3_CHANNEL || options.channel || 'Default Channel',
       host: process.env.TS3_HOST || options.host || '127.0.0.1',
       port: process.env.TS3_PORT || options.port || '10011',
-      watch: process.env.TS3_WATCH || options.watch || 1000,
       verbose: !!process.env.BOT_VERBOSE || options.verbose || false
     }
 
@@ -76,8 +75,6 @@ class Bot extends EventEmitter {
     });
 
     this.on('clientmoved', (data) => {
-      console.log(data.client);
-      console.log(this.client);
       if (this.channel && data.channel && data.client && data.client.client_unique_identifier !== this.client.client_unique_identifier) {
         if (this.channel.cid === data.channel.cid) {
           this.emit('cliententerchannel', data);
@@ -102,6 +99,24 @@ class Bot extends EventEmitter {
           this.emit(event, resp);
         });
       });
+    });
+  }
+
+  getServerGroupByName() {
+    const { name, callback } = this._args(arguments, {
+      'string': 'name'
+    });
+
+    this._query('servergrouplist', (err, resp, req) => {
+      if (err) return callback(err);
+
+      const filtered = resp.data.filter(group => group.name === name);
+
+      if (filtered.length > 0) {
+        return callback(null, filtered[0]);
+      } else {
+        return callback(`Unable to find server group: '${name}'`);
+      }
     });
   }
 
@@ -133,7 +148,17 @@ class Bot extends EventEmitter {
 
       const client = resp.data ? new Client({ bot: this, data: resp.data, clid }) : null;
 
-      return callback(null, client);
+      if (client.client_unique_identifier !== this.client.client_unique_identifier) {
+        this._query('clientdbfind', { pattern: client.client_unique_identifier, '-uid': '' }, (err, resp, req) => {
+          if (err) return callback(err);
+
+          client.cldbid = resp.data.cldbid;
+
+          return callback(null, client);
+        });
+      } else {
+        return callback(null, client);
+      }
     });
   }
 

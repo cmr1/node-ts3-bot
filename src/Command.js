@@ -25,8 +25,6 @@ class Command {
       this.bot.logger.log('Running CMD: ' + this.cmd);
 
       this.action(this.args, data);
-
-      // this.bot.emit(this.cmd, this.args);
     }
   }
 }
