@@ -7,13 +7,14 @@
     "alfred-teamspeak": "^4.0.1",
     "async": "^2.4.1",
     "cmr1-logger": "0.0.3",
-    "node-rest-client": "^3.1.0",
-    "node-teamspeak-api": "^1.0.0",
-    "string-template": "^1.0.0"
+    "node-teamspeak-api": "^1.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2"
+  },
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test/**/*.spec.js"
   },
   "repository": {
     "type": "git",
