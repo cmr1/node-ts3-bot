@@ -18,7 +18,7 @@ const defaultArgTypes = {
 };
 
 const registerEvents = [
-  'server',
+  // 'server',
   'textserver',
   'textchannel',
   'textprivate'
