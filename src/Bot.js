@@ -17,12 +17,12 @@ const defaultArgTypes = {
   'object': (obj) => { return Array.isArray(obj) ? 'options' : 'params' }
 };
 
-const registerEvents = [
-  'server',
-  'textserver',
-  'textchannel',
-  'textprivate'
-];
+// const registerEvents = [
+//   'server',
+//   'textserver',
+//   'textchannel',
+//   'textprivate'
+// ];
 
 class Bot extends EventEmitter {
   constructor(options = {}) {
@@ -68,10 +68,11 @@ class Bot extends EventEmitter {
     this.on('ready', () => {
       this.logger.success(`${this.options.name} is ready!`);
 
-      registerEvents.forEach(event => {
-        this.logger.debug(`Registering for '${event}' notifications`);
-        this.ts3.subscribe({ event });
-      });
+      // registerEvents.forEach(event => {
+      //   this.logger.debug(`Registering for '${event}' notifications`);
+      //   // this.ts3.subscribe({ event });
+      // });
+
     });
 
     this.on('clientmoved', (data) => {
@@ -442,14 +443,14 @@ class Bot extends EventEmitter {
     });
   }
 
-  _warn(msg) {
-    this.emit('warning', msg);
-    this.logger.warn(msg);
+  _warn() {
+    this.emit('warning', ...arguments);
+    this.logger.warn(...arguments);
   }
 
-  _error(err) {
-    this.emit('failure', err);
-    this.logger.error(err);
+  _error() {
+    this.emit('failure', ...arguments);
+    this.logger.error(...arguments);
   }
 }
 
