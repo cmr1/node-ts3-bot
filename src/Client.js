@@ -40,6 +40,16 @@ class Client {
     });
   }
 
+  getServerGroups() {
+    const { callback } = this.bot._args(arguments);
+
+    this.bot._query('servergroupsbyclientid', { cldbid: this.cldbid }, (err, resp, req) => {
+      if (err) return callback(err);
+
+      return callback(null, Array.isArray(resp.data) ? resp.data : [ resp.data ]);
+    });
+  }
+
   addToServerGroup() {
     const { name, callback } = this.bot._args(arguments, {
       'string': 'name'
@@ -50,7 +60,7 @@ class Client {
 
       this.bot._query('servergroupaddclient', { cldbid: this.cldbid, sgid: group.sgid }, (err, resp, req) => {
         if (err) {
-          if (err && err.error_id && err.error_id === 2561) {
+          if (err.error_id && err.error_id === 2561) {
             this.message(`You are already a member of the group: ${name}`);
           }
 

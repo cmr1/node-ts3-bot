@@ -72,6 +72,7 @@ class Bot extends EventEmitter {
         this.logger.debug(`Registering for '${event}' notifications`);
         this.ts3.subscribe({ event });
       });
+
     });
 
     this.on('clientmoved', (data) => {
@@ -442,14 +443,14 @@ class Bot extends EventEmitter {
     });
   }
 
-  _warn(msg) {
-    this.emit('warning', msg);
-    this.logger.warn(msg);
+  _warn() {
+    this.emit('warning', ...arguments);
+    this.logger.warn(...arguments);
   }
 
-  _error(err) {
-    this.emit('failure', err);
-    this.logger.error(err);
+  _error() {
+    this.emit('failure', ...arguments);
+    this.logger.error(...arguments);
   }
 }
 
