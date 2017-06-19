@@ -32,6 +32,7 @@ class Bot extends EventEmitter {
     this.server = null;
     this.channel = null;
     this.commands = {};
+    this.keepAliveInterval = 60000; // 60 seconds
 
     this.options = {
       sid:  process.env.TS3_SID  || options.sid  || '1',
@@ -67,6 +68,8 @@ class Bot extends EventEmitter {
 
     this.on('ready', () => {
       this.logger.success(`${this.options.name} is ready!`);
+
+      this._keepAlive();
 
       registerEvents.forEach(event => {
         this.logger.debug(`Registering for '${event}' notifications`);
@@ -441,6 +444,16 @@ class Bot extends EventEmitter {
         });
       });
     });
+  }
+
+  _keepAlive() {
+    setInterval(() => {
+      this.logger.debug(`Keep alive query request`);
+
+      this._query('whoami', (err, resp, req) => {
+        this.logger.debug(`Keep alive query response`);
+      });
+    }, this.keepAliveInterval);
   }
 
   _warn() {
