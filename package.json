@@ -20,7 +20,7 @@
     "pretest": "npm run lint",
     "test": "mocha test/**/*.spec.js",
     "start": "node examples/simple",
-    "preversion": "travis lint .travis.yml",
+    "preversion": "docker-compose run bot npm test && travis lint .travis.yml",
     "postversion": "git push --follow-tags"
   },
   "repository": {
