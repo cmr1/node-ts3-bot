@@ -1,12 +1,13 @@
 sudo: required
-language: ruby
 group: edge
+language: node_js
+node_js: 6
 services:
 - docker
-install:
+before_script:
 - docker-compose build
-script:
-- docker-compose run bot npm test
+- docker-compose up -d
+- docker-compose ps
 deploy:
   provider: npm
   email: admin@cmr1.com
