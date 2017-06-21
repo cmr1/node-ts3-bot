@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  ts3:
+    image: mbentley/teamspeak
+    command: serveradmin_password=password
+    ports:
+      - '10011:10011'
+    volumes:
+      - /tmp/ts3:/data

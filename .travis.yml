@@ -8,10 +8,9 @@ before_install:
 - mkdir -p /tmp/ts3
 - cp -r ts3/* /tmp/ts3/
 - sudo chown -R 503:503 /tmp/ts3
-- docker-compose build
-- docker-compose up -d
-- docker-compose ps
-- docker-compose logs
+- docker-compose -f docker-compose.travis.yml up -d
+- docker-compose -f docker-compose.travis.yml ps
+- docker-compose -f docker-compose.travis.yml logs
 deploy:
   provider: npm
   email: admin@cmr1.com

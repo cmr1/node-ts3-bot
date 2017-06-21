@@ -5,18 +5,16 @@ services:
     image: mbentley/teamspeak
     command: serveradmin_password=password
     ports:
-      # - '9987:9987/udp'
-      # - '30033:30033'
-      # - '41144:41144'
+      - '9987:9987/udp'
+      - '30033:30033'
+      - '41144:41144'
       - '10011:10011'
     volumes:
-      - /tmp/ts3:/data
+      - ./ts3:/data
 
-  # bot:
-  #   build: .
-  #   environment:
-  #     TS3_HOST: ts3
-  #   links:
-  #     - ts3:ts3
-  #   depends_on:
-  #     - ts3
+  bot:
+    build: .
+    environment:
+      TS3_HOST: ts3
+    depends_on:
+      - ts3
