@@ -16,5 +16,7 @@ services:
     build: .
     environment:
       TS3_HOST: ts3
+    links:
+      - ts3:ts3
     depends_on:
       - ts3

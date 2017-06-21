@@ -1,5 +1,5 @@
 [![npm version](https://badge.fury.io/js/cmr1-ts3-bot.svg)](https://www.npmjs.com/package/cmr1-ts3-bot)
-<!--[![build status](https://travis-ci.org/cmr1/node-ts3-bot.svg?branch=master)](https://travis-ci.org/cmr1/node-ts3-bot)-->
+[![build status](https://travis-ci.org/cmr1/node-ts3-bot.svg?branch=master)](https://travis-ci.org/cmr1/node-ts3-bot)
 
 # node-ts3-bot
 
