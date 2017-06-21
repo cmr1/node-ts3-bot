@@ -8,12 +8,6 @@ class Command {
     this.bot = bot;
     this.action = action;
     this.context = context;
-
-    this.bot.on('textmessage', (data) => {
-      if (data && data.invokeruid !== this.bot.options.user && (this.isGlobalContext() || data.targetmode === this.context)) {
-        this.process(data);
-      }
-    });
   }
 
   isGlobalContext() {
@@ -32,13 +26,11 @@ class Command {
     return this.context === config.constants.TextMessageTargetMode.TextMessageTarget_SERVER;
   }
 
-  process(data) {
-    this.args = data.msg.replace(/\s+/g, ' ').trim().split(' ');
-
-    if (this.args[0] === this.cmd) {
+  process(args, data) {
+    if (data && (this.isGlobalContext() || data.targetmode === this.context)) {
       this.bot.logger.log('Running CMD: ' + this.cmd);
 
-      this.action(this.args, data);
+      this.action(args, data);
     }
   }
 }

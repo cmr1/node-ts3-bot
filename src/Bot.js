@@ -1,5 +1,6 @@
 'use strict';
 
+// Load configuration
 const config = require('../config');
 
 const EventEmitter = require('eventemitter2');
@@ -19,7 +20,7 @@ const defaultArgTypes = {
 };
 
 const registerEvents = [
-  // 'server',
+  'server',
   'textserver',
   'textchannel',
   'textprivate'
@@ -74,6 +75,18 @@ class Bot extends EventEmitter {
           this.ts3.subscribe({ event });
         });
 
+        this.on('textmessage', (context) => {
+          if (context.invokeruid !== this.options.user) {
+            const args = context.msg.replace(/\s+/g, ' ').trim().split(' ');
+
+            if (Object.keys(this.commands).indexOf(args[0]) !== -1) {
+              this.commands[args[0]].process(args, context);
+            } else {
+              this.emit('unknowncommand', context);
+            }
+          }
+        });
+
         this.emit('ready');
 
         return callback();
@@ -97,16 +110,21 @@ class Bot extends EventEmitter {
     this.ts3.on('notify', (event, resp) => {
       this.logger.debug(`Received notification for event: '${event}' with response:`, resp);
 
+      const context = Object.assign({}, resp);
       const clientId = resp.invokerid || resp.clid || null;
       const channelId = resp.ctid || resp.cid || null;
 
+      context.getClient = (callback) => {
+        this.getChannelById(clientId, callback);
+      };
+
       this.getClientById(clientId, (err, client) => {
-        if (client) resp.client = client;
+        if (client) context.client = client;
 
         this.getChannelById(channelId, (err, channel) => {
-          if (channel) resp.channel = channel;
+          if (channel) context.channel = channel;
 
-          this.emit(event, resp);
+          this.emit(event, context);
         });
       });
     });

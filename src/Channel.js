@@ -2,7 +2,14 @@
 
 // const config = require('../config');
 
+/**
+ * 
+ */
 class Channel {
+  /**
+   * 
+   * @param {object} param0 
+   */
   constructor({ bot, data, cid }) {
     this.cid = cid;
     this.bot = bot;
@@ -16,6 +23,10 @@ class Channel {
     });
   }
 
+  /**
+   * 
+   * @param {string} msg 
+   */
   message(msg) {
     this.bot.logger.log(`Messaging channel: '${this.channel_name}' with msg: '${msg}'`);
     this.bot.messageChannel(this.cid, msg);

@@ -2,7 +2,9 @@
 
 const Bot = require('../../');
 
-const bot = new Bot();
+const bot = new Bot({
+  // verbose: true
+});
 
 bot.init((err) => {
   if (err) {
@@ -18,6 +20,28 @@ bot.on('ready', () => {
 
 bot.on('join', channel => {
   console.log('Example - Simple: Bot has joined channel');
+});
+
+bot.on('cliententerview', (context) => {
+  // context.getClient((err, client) => {
+  //   console.log(err, client);
+  // });
+
+  context.client.getServerGroups((err, groups) => {
+    if (err) {
+      bot.logger.warn('Unable to get server groups for client!', err, context);
+    
+    // New user is a guest
+  } else if (groups.length === 1 && groups[0].sgid === 8) {
+    context.client.message('hello');
+    }
+  });
+});
+
+bot.on('unknowncommand', (context) => {
+  if (context.client) {
+     context.client.message('I dont understand: ' + context.msg);
+  }
 });
 
 bot.channelCommand('ping', (args, context) => {
