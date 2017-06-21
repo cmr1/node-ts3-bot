@@ -275,10 +275,6 @@ class Bot extends EventEmitter {
     this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_GLOBAL);
   }
 
-  privateCommand(cmd, action) {
-    this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_CLIENT);
-  }
-
   clientCommand(cmd, action) {
     this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_CLIENT);
   }
