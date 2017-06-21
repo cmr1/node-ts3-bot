@@ -1,6 +1,5 @@
 'use strict';
 
-// Load configuration
 const config = require('../config');
 
 const EventEmitter = require('eventemitter2');
@@ -26,7 +25,22 @@ const registerEvents = [
   'textprivate'
 ];
 
+/**
+ * Bot class
+ */
 class Bot extends EventEmitter {
+  /**
+   * 
+   * @param {object} options 
+   * @param {number} options.sid - SID of virtual TS3 server (1)
+   * @param {string} options.user - User to connect to TS3 server query (serveradmin)
+   * @param {string} options.pass - Password to connect to TS3 server query (find in TS3 logs)
+   * @param {string} options.name - Name of the bot (Woodhouse)
+   * @param {string} options.host - TS3 Host (127.0.0.1)
+   * @param {number} options.port - TS3 Port (10011)
+   * @param {string} options.channel - Channel for the bot to join (Default Channel)
+   * @param {boolean} options.verbose - Show verbose/debug output (false)
+   */
   constructor(options = {}) {
     super();
 
@@ -44,9 +58,9 @@ class Bot extends EventEmitter {
       user: process.env.TS3_USER || 'serveradmin',
       pass: process.env.TS3_PASS || 'password',
       name: process.env.BOT_NAME || 'Woodhouse',
-      channel: process.env.TS3_CHANNEL || 'Default Channel',
       host: process.env.TS3_HOST || '127.0.0.1',
       port: process.env.TS3_PORT || '10011',
+      channel: process.env.TS3_CHANNEL || 'Default Channel',
       verbose: !!process.env.BOT_VERBOSE || false
     };
 
