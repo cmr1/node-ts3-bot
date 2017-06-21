@@ -5,6 +5,9 @@ node_js: 6
 services:
 - docker
 before_install:
+- mkdir -p /tmp/ts3
+- cp -r ts3/* /tmp/ts3/
+- sudo chown -R 503:503 /tmp/ts3
 - docker-compose build
 - docker-compose up -d
 - docker-compose ps

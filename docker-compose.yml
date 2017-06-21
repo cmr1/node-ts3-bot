@@ -10,7 +10,7 @@ services:
       # - '41144:41144'
       - '10011:10011'
     volumes:
-      - ./ts3:/data
+      - /tmp/ts3:/data
 
   # bot:
   #   build: .
