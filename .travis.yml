@@ -4,10 +4,11 @@ language: node_js
 node_js: 6
 services:
 - docker
-before_script:
+before_install:
 - docker-compose build
 - docker-compose up -d
 - docker-compose ps
+- docker-compose logs
 deploy:
   provider: npm
   email: admin@cmr1.com
