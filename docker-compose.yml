@@ -16,7 +16,5 @@ services:
     build: .
     environment:
       TS3_HOST: ts3
-    volumes:
-      - .:/bot
     depends_on:
       - ts3
