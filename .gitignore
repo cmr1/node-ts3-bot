@@ -58,3 +58,8 @@ typings/
 .env
 
 tmp
+
+ts3/files
+ts3/logs
+ts3/query_ip_blacklist.txt
+ts3/*.sqlitedb*

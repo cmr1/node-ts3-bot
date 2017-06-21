@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+  ts3:
+    image: mbentley/teamspeak
+    command: serveradmin_password=abc123
+    ports:
+      - '9987:9987/udp'
+      - '30033:30033'
+      - '41144:41144'
+      - '10011:10011'
+    volumes:
+      - ./ts3:/data
+
+  bot:
+    build: .
+    env_file:
+      - .env.test
+    volumes:
+      - .:/bot
+    depends_on:
+      - ts3

@@ -1,5 +1,7 @@
 'use strict';
 
+// const config = require('../config');
+
 class ServerGroup {
   constructor({ bot, data, sgid }) {
     this.sgid = sgid;

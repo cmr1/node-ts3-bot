@@ -1,8 +1,6 @@
 'use strict';
 
-const TARGET_MODE_PRIVATE = 1;
-const TARGET_MODE_CHANNEL = 2;
-const TARGET_MODE_SERVER = 3;
+const config = require('../config');
 
 class Command {
   constructor({ bot, cmd, action, context }) {
@@ -12,10 +10,26 @@ class Command {
     this.context = context;
 
     this.bot.on('textmessage', (data) => {
-      if (data && data.invokeruid !== this.bot.options.user && (this.context === 0 || data.targetmode === this.context)) {
+      if (data && data.invokeruid !== this.bot.options.user && (this.isGlobalContext() || data.targetmode === this.context)) {
         this.process(data);
       }
     });
+  }
+
+  isGlobalContext() {
+    return this.context === config.constants.TextMessageTargetMode.TextMessageTarget_GLOBAL;
+  }
+
+  isClientContext() {
+    return this.context === config.constants.TextMessageTargetMode.TextMessageTarget_CLIENT;
+  }
+
+  isChannelContext() {
+    return this.context === config.constants.TextMessageTargetMode.TextMessageTarget_CHANNEL;
+  }
+
+  isServerContext() {
+    return this.context === config.constants.TextMessageTargetMode.TextMessageTarget_SERVER;
   }
 
   process(data) {

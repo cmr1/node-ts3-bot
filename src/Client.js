@@ -1,5 +1,7 @@
 'use strict';
 
+// const config = require('../config');
+
 class Client {
   constructor({ bot, data, clid }) {
     this.cldbid = null;
@@ -75,9 +77,9 @@ class Client {
   }
 
   addToChannelGroup() {
-    const { name, callback } = this.bot._args(arguments, {
-      'string': 'name'
-    });
+    // const { name, callback } = this.bot._args(arguments, {
+    //   'string': 'name'
+    // });
 
     // TODO
   }

@@ -1,5 +1,7 @@
 'use strict';
 
+// const config = require('../config');
+
 class Server {
   constructor({ bot, data }) {
     this.bot = bot;

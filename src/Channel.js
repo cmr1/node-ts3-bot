@@ -1,5 +1,7 @@
 'use strict';
 
+// const config = require('../config');
+
 class Channel {
   constructor({ bot, data, cid }) {
     this.cid = cid;

@@ -1,10 +1,11 @@
 'use strict';
 
 const config = require('../config');
-const async = require('async');
+
 const EventEmitter = require('eventemitter2');
 const TeamSpeak = require('node-teamspeak-api');
 const Logger = require('cmr1-logger');
+
 const Client = require('./Client');
 const Server = require('./Server');
 const Channel = require('./Channel');
@@ -14,7 +15,7 @@ const defaultArgTypes = {
   'number': 'id',
   'string': 'action',
   'function': 'callback',
-  'object': (obj) => { return Array.isArray(obj) ? 'options' : 'params' }
+  'object': (obj) => { return Array.isArray(obj) ? 'options' : 'params'; }
 };
 
 const registerEvents = [
@@ -32,22 +33,28 @@ class Bot extends EventEmitter {
     this.server = null;
     this.channel = null;
     this.commands = {};
-    this.keepAliveInterval = 60000; // 60 seconds
+    this.keepAlive = {
+      handle: null,
+      interval: 60000 // 60 seconds
+    };
 
-    this.options = {
-      sid:  process.env.TS3_SID  || options.sid  || '1',
-      user: process.env.TS3_USER || options.user || 'serveradmin',
-      pass: process.env.TS3_PASS || options.pass || 'password',
-      name: process.env.BOT_NAME || options.name || 'Woodhouse',
-      channel: process.env.TS3_CHANNEL || options.channel || 'Default Channel',
-      host: process.env.TS3_HOST || options.host || '127.0.0.1',
-      port: process.env.TS3_PORT || options.port || '10011',
-      verbose: !!process.env.BOT_VERBOSE || options.verbose || false
-    }
+    const defaults = {
+      sid:  process.env.TS3_SID  || '1',
+      user: process.env.TS3_USER || 'serveradmin',
+      pass: process.env.TS3_PASS || 'password',
+      name: process.env.BOT_NAME || 'Woodhouse',
+      channel: process.env.TS3_CHANNEL || 'Default Channel',
+      host: process.env.TS3_HOST || '127.0.0.1',
+      port: process.env.TS3_PORT || '10011',
+      verbose: !!process.env.BOT_VERBOSE || false
+    };
+
+    this.options = Object.assign({}, defaults, options);
 
     this.ts3 = new TeamSpeak(this.options.host, this.options.port);
 
     this.logger = new Logger(this.options);
+
     this.logger.enableLogging(config.logging);
   }
 
@@ -60,6 +67,13 @@ class Bot extends EventEmitter {
       this._join(err => {
         if (err) return callback(err);
 
+        this._keepAlive();
+
+        registerEvents.forEach(event => {
+          this.logger.debug(`Registering for '${event}' notifications`);
+          this.ts3.subscribe({ event });
+        });
+
         this.emit('ready');
 
         return callback();
@@ -67,15 +81,7 @@ class Bot extends EventEmitter {
     });
 
     this.on('ready', () => {
-      this.logger.success(`${this.options.name} is ready!`);
-
-      this._keepAlive();
-
-      registerEvents.forEach(event => {
-        this.logger.debug(`Registering for '${event}' notifications`);
-        this.ts3.subscribe({ event });
-      });
-
+      this.logger.success(`${this.options.name} is ready!`);      
     });
 
     this.on('clientmoved', (data) => {
@@ -103,6 +109,25 @@ class Bot extends EventEmitter {
           this.emit(event, resp);
         });
       });
+    });
+  }
+
+  disconnect() {
+    const { callback } = this._args(arguments);
+
+    clearInterval(this.keepAlive.handle);
+    this.ts3.disconnect();
+
+    return callback();
+  }
+
+  shutdown() {
+    const { callback } = this._args(arguments);
+
+    this._query('serverprocessstop', (err, resp, req) => {
+      if (err) return callback(err);
+
+      return this.disconnect(callback);
     });
   }
 
@@ -145,7 +170,7 @@ class Bot extends EventEmitter {
     if (typeof clid !== 'number') {
       this.logger.debug('Cannot get client without a client id.');
       return callback();
-    };
+    }
     
     this._query('clientinfo', { clid }, (err, resp, req) => {
       if (err) return callback(err);
@@ -189,7 +214,7 @@ class Bot extends EventEmitter {
     if (!cid) {
       this.logger.debug('Cannot get channel without a channel id.');
       return callback();
-    };
+    }
     
     this._query('channelinfo', { cid }, (err, resp, req) => {
       if (err) return callback(err);
@@ -215,22 +240,26 @@ class Bot extends EventEmitter {
   }
 
   globalCommand(cmd, action) {
-    this.command(cmd, action, 0);
+    this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_GLOBAL);
   }
 
   privateCommand(cmd, action) {
-    this.command(cmd, action, 1);
+    this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_CLIENT);
+  }
+
+  clientCommand(cmd, action) {
+    this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_CLIENT);
   }
   
   channelCommand(cmd, action) {
-    this.command(cmd, action, 2);
+    this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_CHANNEL);
   }
 
   serverCommand(cmd, action) {
-    this.command(cmd, action, 3);
+    this.command(cmd, action, config.constants.TextMessageTargetMode.TextMessageTarget_SERVER);
   }
 
-  command(cmd, action, context=1) {
+  command(cmd, action, context) {
     if (typeof this.commands[cmd] !== 'undefined') {
       this._error(`Command: '${cmd}' is already registered!`);
     } else {
@@ -243,19 +272,25 @@ class Bot extends EventEmitter {
     }
   }
 
+  sendCommand(msg, targetmode) {
+    this.emit('textmessage', { msg, targetmode });
+  }
+
   messageClient(target, msg) {
-    this.message(target, msg, 1);
+    this.message(target, msg, config.constants.TextMessageTargetMode.TextMessageTarget_CLIENT);
   }
 
   messageChannel(target, msg) {
-    this.message(target, msg, 2);
+    this.message(target, msg, config.constants.TextMessageTargetMode.TextMessageTarget_CHANNEL);
   }
 
   messageServer(msg) {
-    this.message(this.options.sid, msg, 3);
+    this.message(this.options.sid, msg, config.constants.TextMessageTargetMode.TextMessageTarget_SERVER);
   }
 
-  message(target, msg, context=3) {
+  message(target, msg, context) {
+    context = context || config.constants.TextMessageTargetMode.TextMessageTarget_CHANNEL;
+
     this._query('sendtextmessage', {
       targetmode: context,
       target: target,
@@ -447,13 +482,13 @@ class Bot extends EventEmitter {
   }
 
   _keepAlive() {
-    setInterval(() => {
+    this.keepAlive.handle = setInterval(() => {
       this.logger.debug(`Keep alive query request`);
 
       this._query('whoami', (err, resp, req) => {
         this.logger.debug(`Keep alive query response`);
       });
-    }, this.keepAliveInterval);
+    }, this.keepAlive.interval);
   }
 
   _warn() {
