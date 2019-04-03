@@ -4,6 +4,8 @@ services:
   ts3:
     image: mbentley/teamspeak
     command: serveradmin_password=password
+    environment:
+      TS3SERVER_LICENSE: accept
     ports:
       - '9987:9987/udp'
       - '30033:30033'
