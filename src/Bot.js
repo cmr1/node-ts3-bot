@@ -91,7 +91,7 @@ class Bot extends EventEmitter {
 
         this.on('textmessage', (context) => {
           if (context.invokeruid !== this.options.user) {
-            const args = context.msg.replace(/\s+/g, ' ').trim().split(' ');
+            const args = context.msg.toString().replace(/\s+/g, ' ').trim().split(' ');
 
             if (Object.keys(this.commands).indexOf(args[0]) !== -1) {
               this.commands[args[0]].process(args, context);
